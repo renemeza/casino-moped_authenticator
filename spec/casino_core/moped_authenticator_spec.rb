@@ -7,7 +7,8 @@ module CASino
     let(:pepper) { nil }
     let(:extra_attributes) {{ email: 'mail_address' }}
     let(:options) {{
-      database_url: 'mongodb://localhost:27017/my_db?safe=true',
+      database_url: 'localhost:27017',
+      database: 'my_db',
       collection: 'users',
       username_column: 'username',
       password_column: 'password',
@@ -135,14 +136,18 @@ module CASino
     end
 
     def create_user(username, password, extra = {})
-      session[options[:collection]].insert({
-        username: username,
-        password: password,
-      }.merge(extra))
+      session.with(safe: true) do |safe|
+        safe[options[:collection]].insert({
+          username: username,
+          password: password,
+        }.merge(extra))
+      end
     end
 
     def update_user_pw(username, new_password)
-      session[options[:collection]].find(username: username).update(password: new_password)
+      session.with(safe: true) do |safe|
+        safe[options[:collection]].find(username: username).update(password: new_password)
+      end
     end
 
     def user_with_name(username)
@@ -150,7 +155,9 @@ module CASino
     end
 
     def session
-      @session ||= ::Moped::Session.connect(options[:database_url])
+      @session ||= ::Moped::Session.new([options[:database_url]])
+      @session.use options[:database]
+      @session
     end
   end
 end

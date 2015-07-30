@@ -7,7 +7,8 @@ describe 'Nested Attributes' do
 
   let(:options) do
     {
-      database_url: 'mongodb://localhost:27017/my_nested_db?safe=true',
+      database_url: 'localhost:27017',
+      database: 'my_nested_db',
       collection: 'users',
       username_column: 'emails.address',
       password_column: 'services.password.bcrypt',
@@ -72,14 +73,18 @@ describe 'Nested Attributes' do
   end
 
   def create_user(email_address, bcrypted_password, extra = {})
-    session[options[:collection]].insert({
-      emails: [{ address: email_address }],
-      services: { password: { bcrypt: bcrypted_password } }
-    }.merge(extra))
+    session.with(safe: true) do |safe|
+      safe[options[:collection]].insert({
+        emails: [{ address: email_address }],
+        services: { password: { bcrypt: bcrypted_password } }
+      }.merge(extra))
+    end
   end
 
   def update_user_pw(username, new_password)
-    session[options[:collection]].find(username: username).update(password: new_password)
+    session.with(safe: true) do |safe|
+      safe[options[:collection]].find(username: username).update(password: new_password)
+    end
   end
 
   def user_with_name(username)
@@ -87,6 +92,8 @@ describe 'Nested Attributes' do
   end
 
   def session
-    @session ||= ::Moped::Session.connect(options[:database_url])
+    @session ||= ::Moped::Session.new([options[:database_url]])
+    @session.use options[:database]
+    @session
   end
 end

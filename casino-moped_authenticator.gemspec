@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov', '~> 0.7'
   s.add_development_dependency 'coveralls'
 
-  s.add_runtime_dependency 'moped', '~> 1.5'
+  s.add_runtime_dependency 'moped', '~> 2.0.2'
   s.add_runtime_dependency 'unix-crypt', '~> 1.1'
   s.add_runtime_dependency 'bcrypt', '~> 3.0'
   s.add_runtime_dependency 'casino', '~> 4.0'

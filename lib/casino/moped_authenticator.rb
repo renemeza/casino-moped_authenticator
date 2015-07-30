@@ -7,7 +7,8 @@ class CASino::MopedAuthenticator
   # @param [Hash] options
   def initialize(options)
     @options = options
-    @connection = Moped::Session.connect(options[:database_url])
+    @connection = Moped::Session.new([options[:database_url]])
+    @connection.use options[:database]
   end
 
   def validate(username, password)
@@ -73,7 +74,7 @@ class CASino::MopedAuthenticator
   def extra_attributes(user)
     extra_attributes_option.each_with_object({}) do |(attribute_name, database_column), attributes|
       value = get_nested(user, database_column)
-      value = value.to_s if value.is_a?(Moped::BSON::ObjectId)
+      value = value.to_s if value.is_a?(BSON::ObjectId)
       attributes[attribute_name] = value
     end
   end
